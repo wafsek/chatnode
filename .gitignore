@@ -1,5 +1,5 @@
 .idea/
 store/
 *__pycache__/
-src/client/
+client/
 config.ini
