@@ -10,7 +10,8 @@ def create_messages_table():
         CREATE TABLE messages(
         from_email text ,
         to_email text,
-        message text
+        message text,
+        time_stamp
         )
         """)
 
@@ -26,11 +27,12 @@ def create_people_table():
 
 def insert_message(message):
     with conn:
-        c.execute("INSERT INTO messages VALUES (:from_email, :to_email, :message)",
+        c.execute("INSERT INTO messages VALUES (:from_email, :to_email, :message, :time_stamp)",
                   {
                       'from_email': message["from_email"],
                       'to_email': message["to_email"],
-                      'message': message["message"]
+                      'message': message["message"],
+                      'time_stamp': message["time"]
                   })
 
 
@@ -90,3 +92,4 @@ def fetch_messages_to_email(to_email):
 def initial_setup():
     create_messages_table()
     create_people_table()
+

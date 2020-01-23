@@ -5,6 +5,7 @@ from server.message import Message
 from server.people import Person
 import json
 import uuid
+import time
 
 session_IDs = dict()
 
@@ -12,7 +13,7 @@ session_IDs = dict()
 def make_json_data(rows):
     result = dict()
     for row in rows:
-        message = Message(row[0], row[1], row[3])
+        message = Message(row[0], row[1], row[2], row[3])
         if "messages" in result.keys():
             result["messages"].append(message.__dict__)
         else:
@@ -107,9 +108,11 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
             self.respond(400, b'Not authenticated')
 
     def store_data(self, authentication):
+
         data = self.rfile.read(int(self.headers['Content-Length']))
         message = json.loads(data.decode("utf-8"))
         message["from_email"] = authentication
+        message["time"] = int(time.time())
         insert_message(message)
         self.respond(200, b'Message sent')
 

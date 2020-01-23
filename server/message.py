@@ -1,11 +1,12 @@
 class Message:
     """A Message class"""
 
-    def __init__(self, from_email, to_email, message):
+    def __init__(self, from_email, to_email, message, time):
         self.from_email = from_email
         self.to_email = to_email
         self.message = message
+        self.time = time
 
     @property
     def info(self):
-        return '{}{}'.format((self.from_email, self.to_email, self.message))
+        return '{}{}{}{}'.format(self.time, self.from_email, self.to_email, self.message)
