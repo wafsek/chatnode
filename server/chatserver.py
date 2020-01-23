@@ -12,7 +12,7 @@ session_IDs = dict()
 def make_json_data(rows):
     result = dict()
     for row in rows:
-        message = Message(row[0], row[1], row[2], row[3])
+        message = Message(row[0], row[1], row[3])
         if "messages" in result.keys():
             result["messages"].append(message.__dict__)
         else:
@@ -34,7 +34,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                 self.respond(401, b"Unauthorized")
 
     def do_POST(self):
-        valid= self.is_validate_request()
+        valid = self.is_validate_request()
         if not valid:
             self.respond(400)
         if self.path == "/signup":
