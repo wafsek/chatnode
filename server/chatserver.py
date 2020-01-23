@@ -20,6 +20,13 @@ def make_json_data(rows):
     return json.dumps(result, indent=2).encode()
 
 
+def authenticate(session_id):
+    if session_id not in session_IDs.keys():
+        return False
+    else:
+        return session_IDs[session_id]
+
+
 class MyHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -27,7 +34,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         if not valid:
             self.respond(400)
         if self.path == "/fetch":
-            email = self.authenticate(self.headers["UUID"])
+            email = authenticate(self.headers["UUID"])
             if email:
                 self.fetch_messages(email)
             else:
@@ -44,7 +51,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         elif self.path == "/signout":
             self.sign_out()
         elif self.path == "/send":
-            is_authenticated = self.authenticate(self.headers["UUID"])
+            is_authenticated = authenticate(self.headers["UUID"])
             if is_authenticated:
                 self.store_data(is_authenticated)
             else:
@@ -86,9 +93,9 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                         del session_IDs[key]
             session_IDs[session_id] = login_email
             sign_in_data = json.dumps({"UUID": session_id}, indent=2).encode()
-            self.respond(200, sign_in_data
-                         , {'Content-Type': 'application/json',
-                            'Content-Length': len(sign_in_data).__str__()})
+            self.respond(200, sign_in_data,
+                         {'Content-Type': 'application/json',
+                          'Content-Length': len(sign_in_data).__str__()})
         else:
             self.respond(400, b"Sign in failed")
 
@@ -121,12 +128,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         if response_message:
             self.wfile.write(response_message)
-
-    def authenticate(self, session_id):
-        if session_id not in session_IDs.keys():
-            return False
-        else:
-            return session_IDs[session_id]
 
 
 class ChatNode:
