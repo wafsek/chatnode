@@ -2,7 +2,7 @@ import http.server
 import socketserver
 from server.postbox import *
 from server.message import Message
-from server.people import Person
+from server.person import Person
 import json
 import uuid
 import time

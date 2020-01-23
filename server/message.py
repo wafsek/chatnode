@@ -7,6 +7,3 @@ class Message:
         self.message = message
         self.time = time
 
-    @property
-    def info(self):
-        return '{}{}{}{}'.format(self.time, self.from_email, self.to_email, self.message)
