@@ -1,8 +1,8 @@
 import http.server
 import socketserver
-import postbox
-from message import Message
-from people import Person
+from server.postbox import *
+from server.message import Message
+from server.people import Person
 import json
 import uuid
 
@@ -71,13 +71,13 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         data = self.rfile.read(int(self.headers['Content-Length']))
         json_data = json.loads(data.decode("utf-8"))
         person = Person(json_data["Email"], json_data["Password"])
-        self.respond(200, postbox.insert_person(person).encode('utf-8'))
+        self.respond(200, insert_person(person).encode('utf-8'))
 
     def sign_in(self):
         data = self.rfile.read(int(self.headers['Content-Length']))
         login_data = json.loads(data.decode('utf-8'))
         login_email = login_data["email"]
-        sql_check = postbox.check_password(login_email, login_data["password"])
+        sql_check = check_password(login_email, login_data["password"])
         if sql_check:
             session_id = uuid.uuid4().__str__()
             if login_email in session_IDs.values():
@@ -85,12 +85,12 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                     if value == login_email:
                         del session_IDs[key]
             session_IDs[session_id] = login_email
-            signin_data = json.dumps({"UUID": session_id}, indent=2).encode()
-            self.respond(200, signin_data
+            sign_in_data = json.dumps({"UUID": session_id}, indent=2).encode()
+            self.respond(200, sign_in_data
                          , {'Content-Type': 'application/json',
-                            'Content-Length': len(signin_data).__str__()})
+                            'Content-Length': len(sign_in_data).__str__()})
         else:
-            self.respond(400, b"Sign in  Failed")
+            self.respond(400, b"Sign in failed")
 
     def sign_out(self):
         if self.headers["UUID"] in session_IDs:
@@ -103,11 +103,11 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         data = self.rfile.read(int(self.headers['Content-Length']))
         message = json.loads(data.decode("utf-8"))
         message["from_email"] = authentication
-        postbox.insert_message(message)
+        insert_message(message)
         self.respond(200, b'Message sent')
 
     def fetch_messages(self, email):
-        messages = make_json_data(postbox.fetch_messages_to_email(email))
+        messages = make_json_data(fetch_messages_to_email(email))
         self.respond(200, messages, {'Content-Type': 'application/json'})
 
     def is_authorised(self):

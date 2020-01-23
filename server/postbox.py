@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('../../store/messages.db')
+conn = sqlite3.connect('../store/messages.db')
 c = conn.cursor()
 
 
@@ -34,7 +34,6 @@ def insert_message(message):
                       'size': message["size"],
                       'message': message["message"]
                   })
-    #show_table("messages")
 
 
 def check_password(email, password):
@@ -47,6 +46,7 @@ def check_password(email, password):
             return password == row[1]
         else:
             return False
+
 
 def insert_person(person):
     with conn:
@@ -62,9 +62,9 @@ def insert_person(person):
     return "All signed up"
 
 
-def show_table(tablename):
+def show_table(table_name):
     with conn:
-        sql = "SELECT * FROM " + tablename
+        sql = "SELECT * FROM " + table_name
         c.execute(sql)
         result = c.fetchall()
         for i in result:
@@ -93,8 +93,3 @@ def initial_setup():
     create_messages_table()
     create_people_table()
 
-
-#initial_setup()
-
-#show_table("messages")
-#show_table("people")
