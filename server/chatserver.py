@@ -18,7 +18,13 @@ def make_json_data(rows):
             result["messages"].append(message.__dict__)
         else:
             result["messages"] = [message.__dict__]
-    return json.dumps(result, indent=2).encode()
+    return json.dumps(result, indent=2)
+
+
+def default_response_data(message):
+    result = dict()
+    result["Response message"] = message
+    return result
 
 
 def authenticate(session_id):
@@ -33,18 +39,18 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         valid = self.is_validate_request()
         if not valid:
-            self.respond(400)
+            self.respond(400, json.dumps(default_response_data("Bad Request")))
         if self.path == "/fetch":
             email = authenticate(self.headers["UUID"])
             if email:
                 self.fetch_messages(email)
             else:
-                self.respond(401, b"Unauthorized")
+                self.respond(401, json.dumps(default_response_data("Unauthorized")))
 
     def do_POST(self):
         valid = self.is_validate_request()
         if not valid:
-            self.respond(400)
+            self.respond(400, json.dumps(default_response_data("Bad Request")))
         if self.path == "/signup":
             self.sign_up()
         elif self.path == "/signin":
@@ -56,7 +62,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
             if is_authenticated:
                 self.store_data(is_authenticated)
             else:
-                self.respond(401)
+                self.respond(401, json.dumps(default_response_data("Unauthorized")))
 
     def is_validate_request(self):
         if "Content-Type" not in self.headers:
@@ -79,7 +85,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         data = self.rfile.read(int(self.headers['Content-Length']))
         json_data = json.loads(data.decode("utf-8"))
         person = Person(json_data["Email"], json_data["Password"])
-        self.respond(200, insert_person(person).encode('utf-8'))
+        self.respond(200, json.dumps(default_response_data(insert_person(person))))
 
     def sign_in(self):
         data = self.rfile.read(int(self.headers['Content-Length']))
@@ -93,44 +99,47 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                     if value == login_email:
                         del session_IDs[key]
             session_IDs[session_id] = login_email
-            sign_in_data = json.dumps({"UUID": session_id}, indent=2).encode()
+            response_data = default_response_data("signed in!")
+            response_data["UUID"] = session_id
+            sign_in_data = json.dumps(response_data, indent=2)
             self.respond(200, sign_in_data,
                          {'Content-Type': 'application/json',
                           'Content-Length': len(sign_in_data).__str__()})
         else:
-            self.respond(400, b"Sign in failed")
+            self.respond(400, json.dumps(default_response_data("Sign in failed"), indent=2))
 
     def sign_out(self):
         if self.headers["UUID"] in session_IDs:
             del session_IDs[self.headers["UUID"]]
-            self.respond(200, b"Signed out")
+            self.respond(200, json.dumps(default_response_data("Signed out")))
+
         else:
-            self.respond(400, b'Not authenticated')
+            self.respond(400, json.dumps(default_response_data("Bad Request")))
 
     def store_data(self, authentication):
-
         data = self.rfile.read(int(self.headers['Content-Length']))
         message = json.loads(data.decode("utf-8"))
         message["from_email"] = authentication
         message["time"] = int(time.time())
         insert_message(message)
-        self.respond(200, b'Message sent')
+        self.respond(200, json.dumps(default_response_data('Message sent')))
 
     def fetch_messages(self, email):
         messages = make_json_data(fetch_messages_to_email(email))
         self.respond(200, messages, {'Content-Type': 'application/json'})
 
     def is_authorised(self):
-        self.respond(400, b'Not authorized')
+        self.respond(400, json.dumps(default_response_data('Not authorized')))
 
     def respond(self, code=200, response_message=None, headers=None):
+        data_load = response_message.encode()
         self.send_response(code)
         if headers:
             for header in headers:
                 self.send_header(header, headers[header])
         self.end_headers()
         if response_message:
-            self.wfile.write(response_message)
+            self.wfile.write(data_load)
 
 
 class ChatNode:
