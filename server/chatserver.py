@@ -106,7 +106,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                          {'Content-Type': 'application/json',
                           'Content-Length': len(sign_in_data).__str__()})
         else:
-            self.respond(400, json.dumps(default_response_data("Sign in failed"), indent=2))
+            self.respond(401, json.dumps(default_response_data("Sign in failed"), indent=2))
 
     def sign_out(self):
         if self.headers["UUID"] in session_IDs:
@@ -114,7 +114,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
             self.respond(200, json.dumps(default_response_data("Signed out")))
 
         else:
-            self.respond(400, json.dumps(default_response_data("Bad Request")))
+            self.respond(401, json.dumps(default_response_data("Not authenticated")))
 
     def store_data(self, authentication):
         data = self.rfile.read(int(self.headers['Content-Length']))
@@ -129,7 +129,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         self.respond(200, messages, {'Content-Type': 'application/json'})
 
     def is_authorised(self):
-        self.respond(400, json.dumps(default_response_data('Not authorized')))
+        self.respond(401, json.dumps(default_response_data('Not authorized')))
 
     def respond(self, code=200, response_message=None, headers=None):
         data_load = response_message.encode()
