@@ -6,6 +6,7 @@ from server.person import Person
 import json
 import uuid
 import time
+import hashlib
 
 session_IDs = dict()
 
@@ -84,14 +85,16 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
     def sign_up(self):
         data = self.rfile.read(int(self.headers['Content-Length']))
         json_data = json.loads(data.decode("utf-8"))
-        person = Person(json_data["Email"], json_data["Password"])
+        hashed_password = hashlib.sha224(json_data["Password"].encode()).hexdigest()
+        person = Person(json_data["Email"], hashed_password)
         self.respond(200, json.dumps(default_response_data(insert_person(person))))
 
     def sign_in(self):
         data = self.rfile.read(int(self.headers['Content-Length']))
         login_data = json.loads(data.decode('utf-8'))
         login_email = login_data["email"]
-        sql_check = check_password(login_email, login_data["password"])
+        hashed_password = hashlib.sha224(login_data["password"].encode()).hexdigest()
+        sql_check = check_password(login_email, hashed_password)
         if sql_check:
             session_id = uuid.uuid4().__str__()
             if login_email in session_IDs.values():
