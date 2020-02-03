@@ -1,13 +1,13 @@
-import sqlite3
+import sqlite3, os
 
-conn = sqlite3.connect('../store/messages.db')
-c = conn.cursor()
+conn = None
+c = None
 
 
 def create_messages_table():
     with conn:
         c.execute("""
-        CREATE TABLE messages(
+        CREATE TABLE if not exists messages(
         from_email text ,
         to_email text,
         message text,
@@ -19,7 +19,7 @@ def create_messages_table():
 def create_people_table():
     with conn:
         c.execute("""
-        CREATE TABLE people(
+        CREATE TABLE if not exists people(
         email text PRIMARY KEY ,
         password text
         )""")
@@ -90,6 +90,11 @@ def fetch_messages_to_email(to_email):
 
 
 def initial_setup():
+    global conn, c
+    if not os.path.isdir('../store'):
+        os.mkdir("../store")
+
+    conn = sqlite3.connect('../store/messages.db')
+    c = conn.cursor()
     create_messages_table()
     create_people_table()
-

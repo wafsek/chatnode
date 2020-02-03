@@ -1,8 +1,8 @@
 import http.server
 import socketserver
-from server.postbox import *
-from server.message import Message
-from server.person import Person
+from postbox import *
+from message import Message
+from person import Person
 import json
 import uuid
 import time
@@ -159,4 +159,6 @@ class ChatNode:
         self.httpd.serve_forever()
 
 
-ChatNode(MyHandler, "0.0.0.0", 8000).serve()
+if __name__ == "__main__":
+    initial_setup()
+    ChatNode(MyHandler, "0.0.0.0", 8000).serve()
