@@ -2,6 +2,7 @@ import sqlite3, os
 
 conn = None
 c = None
+database_dir = '../store'
 
 
 def create_messages_table():
@@ -58,7 +59,6 @@ def insert_person(person):
             return "User already exits"
         except sqlite3.Error:
             return "Something went wrong"
-    show_table("people")
     return "All signed up"
 
 
@@ -69,15 +69,6 @@ def show_table(table_name):
         result = c.fetchall()
         for i in result:
             print(i)
-
-
-def fetch_messages():
-    with conn:
-        sql = """SELECT * FROM messages
-                 WHERE to_email='olanordmann@gmail.com'"""
-        c.execute(sql)
-        rows = c.fetchall()
-    return rows
 
 
 def fetch_messages_to_email(to_email):
@@ -91,10 +82,10 @@ def fetch_messages_to_email(to_email):
 
 def initial_setup():
     global conn, c
-    if not os.path.isdir('../store'):
-        os.mkdir("../store")
+    if not os.path.isdir(database_dir):
+        os.mkdir(database_dir)
 
-    conn = sqlite3.connect('../store/messages.db')
+    conn = sqlite3.connect(database_dir+'/messages.db')
     c = conn.cursor()
     create_messages_table()
     create_people_table()
